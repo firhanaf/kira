@@ -85,4 +85,25 @@ setup:
 	$(MAKE) migrate
 	@echo ""
 	@echo "✓ Kira backend ready!"
-	@echo "  Run: make dev"
+	@echo "  Edit .env (set JWT_SECRET), then run: make dev"
+
+# Setup tanpa Docker — butuh PostgreSQL terinstall lokal
+setup-local:
+	@which psql > /dev/null || (echo "✗ psql tidak ditemukan. Install PostgreSQL terlebih dahulu." && exit 1)
+	cp -n .env.example .env || true
+	@echo ""
+	@echo "Membuat database dan user PostgreSQL lokal..."
+	@echo "  (mungkin diminta password postgres superuser)"
+	psql -U postgres -c "CREATE USER kira WITH PASSWORD 'kira_secret';" 2>/dev/null || true
+	psql -U postgres -c "CREATE DATABASE kira_db OWNER kira;" 2>/dev/null || true
+	psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE kira_db TO kira;" 2>/dev/null || true
+	@echo ""
+	@echo "✓ Database siap."
+	@echo ""
+	@echo "Langkah selanjutnya:"
+	@echo "  1. Edit .env — pastikan DATABASE_URL dan JWT_SECRET sudah benar"
+	@echo "  2. Run: make run"
+	@echo ""
+	@echo "  Contoh DATABASE_URL lokal:"
+	@echo "    macOS/Linux : postgres://kira:kira_secret@localhost:5432/kira_db?sslmode=disable"
+	@echo "    Windows     : postgres://kira:kira_secret@localhost:5432/kira_db?sslmode=disable"
